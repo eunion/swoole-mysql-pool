@@ -20,19 +20,8 @@ $server->on('WorkerStart',function($serv,$work_id){
 $server->on('connect',function ($serv,$fd){
     echo "connect \n";
 });
-$server->on('receive',function ($serv,$fd,$from_id,$data){
-    try{
-        $db = Pool::getInstance()->getConnection($serv,$fd);
-    }catch (PoolException $exception){
-
-    }
-    if (!is_null($db)){
-        if (is_string($db)){
-            // 错误信息
-            $serv->send($fd,$db);
-        }
-        $serv->send($fd,$db->query($data));
-    }
+$server->on('receive',function ($serv,$fd,$from_id,$sql){
+    Pool::getInstance()->getConnection($serv,$fd,$sql);
     echo 'pool connect total:'.Pool::getInstance()->getConnectCount()."\n";
     echo 'idle count:'.Pool::getInstance()->getIdleCount()."\n";
 });

@@ -2,6 +2,7 @@
 namespace mysqlPool;
 
 use mysqlPool\exception\PoolException;
+use mysqlPool\Response;
 
 class Pool
 {
@@ -51,16 +52,35 @@ class Pool
             }
             $this->isInited = true;
         }
+
+    }
+
+    public function initTimeTick()
+    {
+        swoole_timer_tick(100,function (){
+            if (count($this->waitQueue->count() == 0)){
+                return false;
+            }else{
+                if ($this->idlePool->count() == 0){
+                    return false;
+                }else{
+                    $serv_data = $this->waitQueue->pop();
+                    $db = $this->getConnection($serv_data[0],$serv_data[1],$serv_data[2]);
+                    Response::send($serv_data[0],$serv_data[1],$db->query($serv_data[2]));
+                }
+            }
+        });
     }
 
     /**
      *  获取连接对外接口
      * @param $serv
      * @param $fd
+     * @param $sql sql语句
      * @return mixed|null
      * @throws PoolException
      */
-    public function getConnection($serv,$fd)
+    public function getConnection($serv,$fd,$sql)
     {
         if ($this->idlePool->count() == 0){
             // 空闲连接池数为0
@@ -69,14 +89,16 @@ class Pool
                 $this->addConnection();
             }else{
                 if ($this->waitQueue->count() < $this->maxWaitNum){
-                    $this->waitQueue->push(array($serv,$fd));
+                    $this->waitQueue->push(array($serv,$fd,$sql));
                 }else{
-                    throw new PoolException('wait queue exceed',1001);
+                    Response::send($serv,$fd,'wait queue exceed');
                 }
             }
+        }else{
+            $db = $this->getDbFromPool();
+            Response::send($serv,$fd,$db->query($sql));
+            return $db;
         }
-        $db = $this->getDbFromPool();
-        return $db;
     }
 
 
@@ -140,6 +162,7 @@ class Pool
 
     /**
      *  销毁连接
+     * @param $db
      */
     public function destroyConnection($db)
     {
