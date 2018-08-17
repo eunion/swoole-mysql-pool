@@ -9,7 +9,7 @@ class Db
     const DB_USER = 'root';
     const DB_PWD = 'root';
     // 引用次数
-    private $quoteNum = 0;
+    private $quoteNum = 0; // 超过最大使用次数 回收连接
     const QUOTE_MAX_NUM = 3; // 最大使用次数
 
     private $conn;
@@ -59,6 +59,14 @@ class Db
     public function isExceedQuoteMax()
     {
         return $this->quoteNum>=self::QUOTE_MAX_NUM?true:false;
+    }
+
+    /**
+     *  引用次数递增
+     */
+    public function incrQuoteNum()
+    {
+        $this->quoteNum++;
     }
 
 

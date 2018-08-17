@@ -141,6 +141,7 @@ class Pool
                 $this->destroyConnection($db);
                 return null;
             }
+            $db->incrQuoteNum();
             return $db;
         }else{
             // 销毁连接，连接数减一
