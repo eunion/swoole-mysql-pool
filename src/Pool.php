@@ -2,7 +2,6 @@
 namespace mysqlPool;
 
 use mysqlPool\exception\PoolException;
-use mysqlPool\Response;
 
 class Pool
 {
@@ -151,11 +150,19 @@ class Pool
 
     }
 
+    /**
+     *  获取空闲连接数
+     * @return int
+     */
     public function getIdleCount()
     {
         return $this->idlePool->count();
     }
 
+    /**
+     *  获取连接数
+     * @return int
+     */
     public function getConnectCount()
     {
         return $this->poolConnNum;

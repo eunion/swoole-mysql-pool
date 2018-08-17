@@ -8,7 +8,6 @@
 require('./vendor/autoload.php');
 
 use mysqlPool\Pool;
-use mysqlPool\exception\PoolException;
 
 $server = new \swoole_server('0.0.0.0',9501,SWOOLE_BASE,SWOOLE_SOCK_TCP);
 $server->set([
